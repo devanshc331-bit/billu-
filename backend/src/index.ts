@@ -42,10 +42,25 @@ async function bootstrap() {
   // 1. Connect to SQLite
   await connectDB();
 
-  // 2. Start Scheduler
+  // 2. Auto-seed on first production run (tables already created by migrate deploy)
+  if (env.NODE_ENV === 'production') {
+    try {
+      const userCount = await prisma.user.count();
+      if (userCount === 0) {
+        logger.info('🌱 Database empty - running initial seed...');
+        const { execSync } = await import('child_process');
+        execSync('npx prisma db seed', { stdio: 'inherit', cwd: '/app/backend' });
+        logger.info('✅ Seed completed.');
+      }
+    } catch (seedErr) {
+      logger.warn('Seeding skipped or failed (non-fatal)', { error: String(seedErr) });
+    }
+  }
+
+  // 3. Start Scheduler
   SchedulerService.start();
 
-  // 3. Listen on PORT
+  // 4. Listen on PORT
   const server = app.listen(env.PORT, () => {
     logger.info(`🚀 Smart Inbox Triage API running at http://localhost:${env.PORT}`);
   });

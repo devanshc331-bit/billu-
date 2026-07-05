@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+app.log
+error.log
+audit.log
+.gemini/
+C:\Users\pc\.gemini/
